@@ -373,6 +373,20 @@ const DICT = [
 "The seminar has been moved to the second floor."
 ];
 
+const REPEAT = [
+"Welcome to the library.",
+"Please return your books by Friday.",
+"The lab opens at nine every morning.",
+"Your student card is needed to enter the building.",
+"The seminar has been moved to the second floor.",
+"Remember to label every sample before storing it.",
+"Office hours are held every Wednesday after lunch.",
+"Students must wear safety glasses in the laboratory at all times.",
+"If you have questions about the assignment, send an email to your tutor.",
+"The results suggest that temperature has a strong effect on the reaction rate.",
+"Applications without a language certificate will not be considered by the committee.",
+"Before you start the experiment, make sure that all the equipment has been cleaned."
+];
 const WRITE = [
 {type:"discussion",prof:"Dr. Lee (Environmental Science)",q:"Several governments are considering a complete ban on single-use plastics. Some say a ban is the most effective way to cut pollution; others argue it harms consumers and small businesses. Which approach would you support, and why?",
  a:["Anna","A full ban is the only thing that works. Voluntary measures have been tried for years and plastic waste keeps growing."],b:["Mark","I think taxes and better recycling are smarter. A ban hits small shops hardest, and alternatives are not always greener."]},
@@ -424,7 +438,8 @@ const STATIONS = [
 {id:"err",code:"RUS",name:"Ошибки русских",d:"Ложные друзья, предлоги, типичные кальки",min:"4 мин"},
 {id:"tns",code:"TNS",name:"Времена",d:"Perfect vs Past, пассив для процессов",min:"4 мин"},
 {id:"bld",code:"BAS",name:"Build a Sentence",d:"Порядок слов — задание нового TOEFL",min:"5 мин"},
-{id:"dct",code:"L&R",name:"Диктант",d:"Слушай фразу из кампуса и набирай — аналог Listen & Repeat",min:"5 мин"},
+{id:"rep",code:"L&R",name:"Listen & Repeat",d:"Слушай фразу и повтори в микрофон — оценка по рубрике ETS 0–5",min:"5 мин"},
+{id:"dct",code:"DCT",name:"Диктант",d:"Слушай фразу из кампуса и набирай — аналог Listen & Repeat",min:"5 мин"},
 {id:"wrt",code:"WRT",name:"Writing + AI",d:"Academic Discussion / Email на время, строгая AI-оценка",min:"10 мин"},
 {id:"spk",code:"SPK",name:"Speaking + AI",d:"15 с подготовки, 45 с ответа, разбор транскрипта",min:"3 мин"}
 ];
@@ -521,7 +536,7 @@ function renderToday(){
   const key={1:"A",3:"B",5:"C"}[dow];
   let items=[];
   if(key==="A") items=[["Reading на время — 40 мин",null],["Лексика AWL — 20 мин","lex"],["Writing: "+p.wr,"wrt"],["Разбор ошибок — 20 мин",null]];
-  else if(key==="B") items=[["Listening без конспекта — 40 мин",null],["Диктант / shadowing — 20 мин","dct"],["Speaking: "+p.sp,"spk"],["AI-разбор ответов — 20 мин",null]];
+  else if(key==="B") items=[["Listening без конспекта — 40 мин",null],["Listen & Repeat / диктант — 20 мин","rep"],["Speaking: "+p.sp,"spk"],["AI-разбор ответов — 20 мин",null]];
   else if(key==="C") items=[["Мини-тест по слабому навыку","tns"],["Журнал ошибок + переписать 1 текст","wrt"],["Повтор лексики","lex"],[p.t?"Контроль: "+p.t:"Раз в 3 недели — полный пробник вместо занятия",null]];
   else items=[["Лексика AWL (5 мин)","lex"],["Один урок грамматики (4 мин)",["art","err","tns","bld"][now.getDate()%4]],["Speaking: один ответ на 45 с","spk"]];
   const sk="w"+w+(key||"");
@@ -584,6 +599,7 @@ function buildItems(id){
   if(id==="err") return pick(ERRORS,8).map(e=>({kind:"mc",q:e[0],opts:shuffle(e[1]),ans:e[1][e[2]],ex:e[3]}));
   if(id==="tns") return pick(TENSES,8).map(e=>({kind:"mc",q:e[0].replace("___",'<span class="blank"></span>'),opts:shuffle(e[1]),ans:e[1][e[2]],ex:e[3]}));
   if(id==="bld") return pick(BUILD,6).map(s=>({kind:"tiles",q:"Собери предложение",ans:s,tiles:shuffle(s.split(" "))}));
+  if(id==="rep"){const easy=REPEAT.slice(0,6),hard=REPEAT.slice(6);return [...pick(easy,3),...pick(hard,3)].map(s=>({kind:"repeat",q:"Прослушай и повтори вслух",ans:s}));}
   if(id==="dct") return pick(DICT,6).map(s=>({kind:"type",q:"Прослушай и напиши",ans:s}));
 }
 
@@ -647,6 +663,7 @@ function showItem(){
     $("check").onclick=()=>{const s=chosen.map(k=>it.tiles[k]).join(" ");const ok=s===it.ans;$("check").disabled=true;
       box.querySelectorAll(".tile").forEach(b=>b.disabled=true);answered(ok,ok?esc(it.ans):`Правильно: <b>${esc(it.ans)}</b>`);};
   }
+  if(it.kind==="repeat"){showRepeat(it,box);return;}
   if(it.kind==="type"){
     box.innerHTML=`<div class="q">${it.q}</div><div class="row"><button class="btn pri" id="play">▶ Слушать</button><button class="btn" id="slow">▶ Медленно</button></div>
     <input class="txt" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши, что услышал"><div><button class="btn pri" id="check">Проверить</button></div>
@@ -656,6 +673,36 @@ function showItem(){
       answered(r.acc>=0.85,`Точность ${Math.round(r.acc*100)}%. ${r.html}`);};
     $("check").onclick=go;$("typed").onkeydown=e=>{if(e.key==="Enter"&&!$("check").disabled)go();};$("typed").focus();
   }
+}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const FUNC=new Set("a an the to of in on at by for and or but is are was were be been has have had it its this that your you your every all will not with from as".split(" "));
+function repScore(ref,got){
+  const a=words(ref),b=words(got);if(!b.length)return {sc:0,r:cmp(ref,got)};
+  const r=cmp(ref,got);if(a.join(" ")===b.join(" "))return {sc:5,r};
+  const content=a.filter(w=>!FUNC.has(w)),bs=new Set(b);const cHit=content.filter(w=>bs.has(w)).length/Math.max(1,content.length);
+  let sc=r.acc>=0.85&&cHit>=0.95?4:(cHit>=0.7&&b.length>=a.length*0.7?3:(r.acc>=0.3?2:1));
+  return {sc,r};
+}
+function showRepeat(it,box){
+  box.innerHTML=`<div class="q">${it.q}</div><div class="row"><button class="btn" id="play">▶ Слушать</button><button class="btn pri" id="rec">● Повторить</button></div>
+  <div class="card" id="heard" style="min-height:48px"><span class="muted">Нажми «Повторить» и скажи фразу целиком. Как в TOEFL, текст фразы не показывается.</span></div>
+  <p class="note" id="srnote">${SR?"Распознавание речи работает в Chrome, Edge и Safari. Если выходит ошибка network, сервис распознавания недоступен в сети — включи VPN или используй станцию DCT.":"Этот браузер не распознаёт речь — открой сайт в Chrome или Safari, либо используй станцию DCT (диктант)."}</p>`;
+  $("play").onclick=()=>say(it.ans);setTimeout(()=>say(it.ans),250);
+  if(!SR){$("rec").disabled=true;return;}
+  let rec=null;
+  $("rec").onclick=()=>{
+    if(rec){rec.stop();return;}
+    try{speechSynthesis.cancel();}catch(_){}
+    rec=new SR();rec.lang="en-US";rec.interimResults=true;rec.maxAlternatives=1;rec.continuous=false;
+    let finalT="";$("rec").textContent="■ Стоп";$("heard").innerHTML='<span class="muted">Слушаю…</span>';
+    rec.onresult=e=>{let t="";for(const r of e.results)t+=r[0].transcript;finalT=t;$("heard").textContent=t;};
+    rec.onerror=e=>{$("heard").innerHTML=`<span class="del" style="text-decoration:none">Ошибка распознавания: ${esc(e.error)}</span>`+(e.error==="not-allowed"?" — разреши доступ к микрофону в настройках сайта.":"");};
+    rec.onend=()=>{$("rec").textContent="● Повторить";rec=null;if(!finalT)return;
+      const {sc,r}=repScore(it.ans,finalT);$("rec").disabled=true;$("play").disabled=true;
+      const lv=["нет ответа","почти ничего","большая часть пропущена","смысл передан не полностью","смысл сохранён, мелкие отличия","точное повторение"][sc];
+      answered(sc>=4,`Рубрика ETS: <b>${sc}/5</b> — ${lv}.<br>Фраза: ${r.html.replace(/^<br>/,"")}<br><span class="muted">Услышано: ${esc(finalT)}</span>`);};
+    rec.start();
+  };
 }
 function words(s){return s.toLowerCase().replace(/[^a-z0-9' ]+/g," ").split(/\s+/).filter(Boolean);}
 function cmp(ref,got){const a=words(ref),b=words(got);const m=a.map(()=>Array(b.length+1).fill(0));
