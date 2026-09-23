@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1D4E89">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Цех TOEFL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F1F1EE; --panel:#FFFFFF; --panel2:#F7F7F4; --ink:#161616; --muted:#6B6B66; --line:#D6D6D0; --line2:#B9B9B2;
+  --accent:#1D4E89; --accent-ink:#FFFFFF; --accent-soft:#E6ECF4;
+  --ok:#2D6A3E; --ok-bg:#E5F0E7; --bad:#A33A2C; --bad-bg:#F6E6E3; --heat0:#E3E3DE;
+  --body:"IBM Plex Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --bg:#161718; --panel:#1D1F21; --panel2:#222527; --ink:#E6E6E3; --muted:#9A9C9E; --line:#303336; --line2:#45494D;
+  --accent:#7FA7DB; --accent-ink:#101214; --accent-soft:#223043; --ok:#7BC08C; --ok-bg:#1E2F23; --bad:#E08476; --bad-bg:#382220; --heat0:#2A2D30;}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --bg:#161718; --panel:#1D1F21; --panel2:#222527; --ink:#E6E6E3; --muted:#9A9C9E; --line:#303336; --line2:#45494D;
+  --accent:#7FA7DB; --accent-ink:#101214; --accent-soft:#223043; --ok:#7BC08C; --ok-bg:#1E2F23; --bad:#E08476; --bad-bg:#382220; --heat0:#2A2D30;}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:20px 60px}
+h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
+.tag{font:500 12px/1.3 var(--body);color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line2)}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:20px}
+.tabs{display:flex;gap:4px}
+.tabs button{background:none;border:1px solid transparent;padding:6px 12px;font-size:14px;color:var(--muted);border-radius:3px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--line2);background:var(--panel)}
+
+.gauges{display:grid;grid-template-columns:repeat(5,1fr);margin-top:16px;border:1px solid var(--line);background:var(--panel)}
+.g{padding:10px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.g:last-child{border-right:0}
+.g .v{font:500 22px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.g .v small{font:400 13px var(--body);color:var(--muted)}
+.meter{height:4px;background:var(--heat0);position:relative;margin-top:6px}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.meter.done i{background:var(--ok)}
+@media (max-width:700px){.gauges{grid-template-columns:repeat(2,1fr)}.g{border-bottom:1px solid var(--line)}.g:nth-child(2n){border-right:0}.g:last-child{grid-column:1/-1;border-bottom:0}}
+
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:16px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ph h2{font-size:15px}
+.pb{padding:14px}
+.hazard{display:none}
+
+.today-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.today-list li{display:grid;grid-template-columns:18px 1fr;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.today-list li:last-child{border-bottom:0}
+.chk{width:20px;height:20px;border:1px solid var(--line2);background:var(--panel);display:grid;place-items:center;padding:0;font:500 12px var(--mono);border-radius:2px;color:var(--muted)}
+.chk[aria-checked="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.muted{color:var(--muted)}
+.phase{margin-bottom:10px}
+.phase b{font-weight:600}
+
+.stations{margin-top:16px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column}
+.st{display:grid;grid-template-columns:52px 1fr 150px 90px;gap:14px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left}
+.st:last-child{border-bottom:0}
+.st:hover{background:var(--panel2)}
+.st .code{font:500 12px var(--mono);color:var(--muted)}
+.st .code b{font-weight:500}
+.st h3{font-size:15px}
+.st p{margin:0;font-size:13px;color:var(--muted)}
+.st .lvl{font:400 12px var(--mono);color:var(--muted)}
+.st .go{justify-self:end;font-size:13px;color:var(--accent);white-space:nowrap}
+.st.focus h3::after{content:"сегодня";margin-left:8px;font:500 11px var(--body);color:var(--accent);border:1px solid var(--accent);padding:0 5px;border-radius:2px;vertical-align:2px}
+@media (max-width:640px){.st{grid-template-columns:44px 1fr auto}.st .lvlbox{display:none}}
+
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);gap:2px;overflow-x:auto;padding-bottom:4px}
+.heat span{width:11px;height:11px;background:var(--heat0)}
+.heat span.l1{background:color-mix(in srgb,var(--accent) 30%,var(--heat0))}
+.heat span.l2{background:color-mix(in srgb,var(--accent) 65%,var(--heat0))}
+.heat span.l3{background:var(--accent)}
+.heat span.today{outline:1px solid var(--ink)}
+
+.btn{border:1px solid var(--line2);background:var(--panel);padding:8px 14px;font-size:14px;border-radius:3px}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.plan{width:100%;border-collapse:collapse;font-size:14px}
+.plan th,.plan td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.plan th{font-weight:500;font-size:12px;color:var(--muted)}
+.plan tr.cur td{background:var(--accent-soft)}
+.plan td.w{font:500 14px var(--mono)}
+.plan .abc{display:flex;gap:4px}
+.plan .abc .chk{width:26px;height:24px}
+.test{font:500 11px var(--mono);border:1px solid var(--line2);padding:0 4px;white-space:nowrap;color:var(--ink)}
+.scroll{overflow-x:auto}
+
+#lesson{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#lesson[hidden]{display:none!important}
+.lhead{display:flex;align-items:center;gap:12px;max-width:720px;width:100%;margin:0 auto;padding:14px 16px}
+.x{border:1px solid var(--line2);background:var(--panel);width:32px;height:32px;font-size:14px;flex:none;border-radius:3px}
+.prog{flex:1;height:6px;background:var(--heat0);position:relative}
+.prog i{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .2s}
+.lbody{flex:1;overflow-y:auto}
+.lin{max-width:720px;margin:0 auto;padding:10px 16px 24px;display:flex;flex-direction:column;gap:16px}
+.q{font-size:22px;line-height:1.35;font-weight:500}
+.q .blank{display:inline-block;min-width:56px;border-bottom:2px solid var(--ink)}
+.opts{display:grid;gap:8px}
+.opt{border:1px solid var(--line2);background:var(--panel);padding:12px 14px;text-align:left;font-size:16px;display:flex;gap:12px;align-items:center;border-radius:3px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt kbd{font:500 11px var(--mono);color:var(--muted)}
+.opt.ok{background:var(--ok-bg);border-color:var(--ok)}
+.opt.no{background:var(--bad-bg);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.ans{min-height:54px;border-bottom:1px solid var(--ink);display:flex;flex-wrap:wrap;gap:6px;padding:8px 0;align-content:flex-start}
+.bank{display:flex;flex-wrap:wrap;gap:6px}
+.tile{border:1px solid var(--line2);background:var(--panel);padding:7px 10px;font-size:16px;border-radius:3px}
+.tile.used{visibility:hidden}
+input.txt,textarea.txt,select.txt{width:100%;border:1px solid var(--line2);background:var(--panel);color:var(--ink);font:16px/1.5 var(--body);padding:10px 12px;border-radius:3px}
+textarea.txt{min-height:240px;resize:vertical}
+.fb{border-top:1px solid var(--line2);background:var(--panel)}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.no{background:var(--bad-bg);border-color:var(--bad)}
+.fbin{max-width:720px;margin:0 auto;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.fb .verdict{font-weight:600;font-size:16px}
+.fb.ok .verdict{color:var(--ok)} .fb.no .verdict{color:var(--bad)}
+.fb .expl{font-size:14px;max-width:520px}
+.timer{font:500 28px/1 var(--mono);font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad)}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px}
+.post{border-left:2px solid var(--line2);padding-left:10px;margin-top:8px}
+.post b{font-size:13px}
+.result h3{font-size:14px;margin-bottom:4px}
+.score{font:500 44px/1 var(--mono);color:var(--accent)}
+table.err{width:100%;border-collapse:collapse;font-size:14px}
+table.err td,table.err th{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+table.err th{font-weight:500;font-size:12px;color:var(--muted)}
+.del{text-decoration:line-through;color:var(--bad)}
+.ins{color:var(--ok);font-weight:500}
+.done{text-align:center;gap:10px;align-items:center}
+.big{font:500 48px/1 var(--mono)}
+.note{font-size:13px;color:var(--muted)}
+.save{font:400 12px var(--body);color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Цех TOEFL</h1><span class="tag">TOEFL iBT 2026 · цель 4.5 · экзамен 13–20 февраля</span></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-home" aria-selected="true" data-tab="home">Сегодня</button>
+      <button role="tab" id="tab-plan" aria-selected="false" data-tab="plan">План 20 недель</button>
+      <button role="tab" id="tab-log" aria-selected="false" data-tab="log">Журнал</button>
+    </div>
+  </header>
+
+  <section class="gauges" id="gauges"></section>
+
+  <main id="view-home">
+    <div class="grid2">
+      <div class="panel">
+        <div class="ph"><h2 id="todayTitle">Смена на сегодня</h2><span class="tag" id="todayDate"></span></div>
+        <div class="pb" id="todayBody"></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Активность</h2><span class="tag">последние 12 недель</span></div>
+        <div class="pb">
+          <div class="heat" id="heat" aria-label="Активность по дням"></div>
+          <p class="note" style="margin:10px 0 0">Клетка закрашена — был хотя бы один урок. Ярче — дневная цель выполнена.</p>
+          <p class="save" id="saveState" style="margin:8px 0 0"></p>
+        </div>
+      </div>
+    </div>
+    <div class="stations" id="stations"></div>
+  </main>
+
+  <main id="view-plan" hidden>
+    <div class="panel" style="margin-top:16px">
+      <div class="ph"><h2>План до экзамена</h2><span class="tag">A — Reading + Writing, B — Listening + Speaking, C — повтор или тест</span></div>
+      <div class="scroll"><table class="plan" id="planTable"></table></div>
+    </div>
+    <p class="note">IA = IELTS Advantage: Writing Skills; «Файл 1» = слайды IELTS High Score. Отметка занятия даёт +50 XP.</p>
+  </main>
+
+  <main id="view-log" hidden>
+    <div class="grid2">
+      <div class="panel"><div class="ph"><h2>Проверки Writing / Speaking</h2></div><div class="pb" id="logList"></div></div>
+      <div class="panel"><div class="ph"><h2>Мои ошибки</h2><span class="tag">из AI-проверок</span></div><div class="pb" id="errList"></div></div>
+    </div>
+    <div class="panel" style="margin-top:16px"><div class="ph"><h2>Синхронизация между устройствами</h2><span class="tag" id="syncState2"></span></div>
+      <div class="pb" style="display:grid;gap:10px">
+        <p style="margin:0">Прогресс хранится в приватном GitHub Gist. Вставь один и тот же токен на телефоне и ноутбуке, и прогресс будет общим. Токен остаётся только в этом браузере.</p>
+        <label class="tag" for="ghTok">GitHub-токен (classic, только право <b>gist</b>)</label>
+        <input class="txt" id="ghTok" type="password" autocomplete="off" placeholder="ghp_…">
+        <label class="tag" for="ghGist">ID gist'а (заполнится сам; на втором устройстве найдётся автоматически)</label>
+        <input class="txt" id="ghGist" autocomplete="off" placeholder="создастся при первой синхронизации">
+        <div class="row"><button class="btn pri" id="ghSave">Сохранить и синхронизировать</button><button class="btn" id="ghOff">Отключить</button><span class="note" id="ghMsg"></span></div>
+      </div></div>
+    <div class="panel" style="margin-top:16px"><div class="ph"><h2>AI-проверка</h2><span class="tag">ключ синхронизируется через gist</span></div>
+      <div class="pb" style="display:grid;gap:10px">
+        <label class="tag" for="apiProv">Сервис</label>
+        <select class="txt" id="apiProv">
+          <option value="openrouter">OpenRouter — бесплатно, работает из РФ (рекомендую)</option>
+          <option value="gemini">Google Gemini — бесплатный лимит, из РФ только с VPN</option>
+          <option value="anthropic">Anthropic Claude — платно</option>
+        </select>
+        <p class="note" id="apiHelp" style="margin:0"></p>
+        <label class="tag" for="apiKey">Ключ</label>
+        <input class="txt" id="apiKey" type="password" autocomplete="off">
+        <label class="tag" for="apiModel">Модель</label>
+        <input class="txt" id="apiModel" autocomplete="off">
+        <div class="row"><button class="btn pri" id="apiSave">Сохранить</button><button class="btn" id="apiTest">Проверить ключ</button><span class="note" id="apiMsg"></span></div>
+      </div></div>
+    <div class="panel" style="margin-top:16px"><div class="ph"><h2>Резервная копия</h2></div>
+      <div class="pb" style="display:grid;gap:10px">
+        <div class="row"><button class="btn" id="bkMake">Показать код прогресса</button><button class="btn" id="bkCopy" hidden>Скопировать</button></div>
+        <textarea class="txt" id="bkOut" style="min-height:80px" readonly hidden></textarea>
+        <label class="tag" for="bkIn">Вставить код с другого устройства (прогресс объединится)</label>
+        <textarea class="txt" id="bkIn" style="min-height:80px" placeholder="Вставь код сюда"></textarea>
+        <div class="row"><button class="btn pri" id="bkLoad">Объединить</button><span class="note" id="bkMsg"></span></div>
+      </div></div>
+  </main>
+</div>
+
+<div id="lesson" hidden>
+  <div class="lhead"><button class="x" id="lx" aria-label="Выйти из урока">✕</button><div class="prog"><i id="lprog" style="width:0"></i></div><span class="mono" id="lcount"></span></div>
+  <div class="lbody"><div class="lin" id="lin"></div></div>
+  <div class="fb" id="fb" hidden><div class="fbin"><div><div class="verdict" id="fbv"></div><div class="expl" id="fbe"></div></div><button class="btn pri" id="fbnext">Дальше</button></div></div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const EXAM = "2027-02-15", W1 = "2026-09-28", GOAL = 30;
+
+const WORDS = [
+["analyse","анализировать","We analysed the samples by HPLC."],["approach","подход","This approach reduces waste."],["assess","оценивать","The model assesses risk."],
+["assume","предполагать","We assume the gas is ideal."],["available","доступный","Data are available online."],["benefit","польза, выгода","The main benefit is lower cost."],
+["concept","понятие","The concept of equilibrium is key."],["consist","состоять (of)","The mixture consists of two phases."],["constitute","составлять","Women constitute 40% of staff."],
+["derive","получать, выводить","The formula is derived from theory."],["distribute","распределять","Heat is distributed evenly."],["establish","устанавливать","They established a new lab."],
+["estimate","оценивать приблизительно","We estimate the yield at 80%."],["evident","очевидный","It is evident that prices rose."],["factor","фактор","Temperature is a key factor."],
+["identify","выявлять","We identified three impurities."],["indicate","указывать","The results indicate a trend."],["interpret","интерпретировать","Interpret the graph carefully."],
+["involve","включать, предполагать","The process involves two steps."],["issue","проблема, вопрос","Safety is a major issue."],["occur","происходить","The reaction occurs at 50 °C."],
+["principle","принцип","The principle is simple."],["proceed","продолжаться, переходить","The reaction proceeds slowly."],["require","требовать","The course requires TOEFL 90."],
+["respond","реагировать, отвечать","Cells respond to stress."],["significant","значимый, существенный","A significant increase was observed."],["source","источник","Cite every source."],
+["specific","конкретный","Give a specific example."],["vary","варьироваться","Results vary by region."],["achieve","достигать","We achieved 95% purity."],
+["acquire","приобретать","Students acquire lab skills."],["affect","влиять","pH affects the rate."],["appropriate","подходящий","Choose an appropriate method."],
+["aspect","аспект","Every aspect was tested."],["component","компонент","A key component failed."],["consequence","последствие","Pollution has serious consequences."],
+["constant","постоянный","Keep the pressure constant."],["demonstrate","демонстрировать, доказывать","The study demonstrates a link."],["emphasis","акцент, упор","The emphasis is on safety."],
+["evaluate","оценивать (качество)","Evaluate both solutions."],["feature","особенность","A key feature is speed."],["impact","воздействие","The impact on health is small."],
+["maintain","поддерживать","Maintain the temperature."],["obtain","получать","The product was obtained as crystals."],["potential","потенциал, потенциальный","AI has huge potential."],
+["primary","основной, первичный","The primary goal is accuracy."],["range","диапазон","A wide range of values."],["relevant","относящийся к делу","Only relevant data were used."],
+["sufficient","достаточный","Is the sample size sufficient?"],["technique","методика","A new technique was developed."],["transfer","перенос; переводить","Heat transfer is fast."],
+["yield","выход (продукта); давать","The reaction yields ethanol."],["hypothesis","гипотеза","The hypothesis was rejected."],["decline","снижение; снижаться","A sharp decline in sales."],
+["fluctuate","колебаться","Prices fluctuated widely."],["outweigh","перевешивать","Benefits outweigh drawbacks."],["mitigate","смягчать","Measures to mitigate emissions."],
+["substantial","существенный","A substantial amount of heat."],["inevitable","неизбежный","Errors are inevitable."],["feasible","осуществимый","Is the plan feasible?"]
+];
+
+const ARTICLES = [
+["___ water boils at 100 °C at sea level.","—","Вещество в общем смысле — без артикля."],
+["She is ___ engineer at a chemical plant.","an","Профессия, одна из многих; перед гласным звуком — an."],
+["___ sun provides energy for photosynthesis.","the","Единственный в своём роде объект."],
+["We measured ___ pH of the solution.","the","Конкретная характеристика конкретного раствора."],
+["This is ___ unique opportunity.","a","unique читается с [ju:] — согласный звук, значит a."],
+["He spent ___ hour in the lab.","an","hour — h немая, гласный звук."],
+["___ research on catalysts has grown rapidly.","—","research — неисчисляемое, общее значение."],
+["It was ___ most difficult exam of the year.","the","Превосходная степень — the."],
+["I need ___ information about the deadline.","—","information неисчисляемое: без a, без -s."],
+["___ Netherlands has excellent technical universities.","the","Названия с of/множественным числом: the Netherlands, the UK."],
+["He works as ___ data scientist.","a","Профессия — a."],
+["Mount Elbrus is ___ highest mountain in Europe.","the","Превосходная степень."],
+["___ advice she gave me was useful.","the","Конкретный совет, уточнён придаточным."],
+["Can you give me ___ example?","an","example — гласный звук."],
+["We had ___ lunch in the canteen.","—","Приёмы пищи без прилагательного — без артикля."],
+["___ graph shows changes in energy use.","the","Конкретный график из задания."],
+["Carbon dioxide is ___ greenhouse gas.","a","Один из класса — a."],
+["___ Lake Baikal is the deepest lake in the world.","—","Lake + название — без артикля."],
+["Most students prefer ___ online courses.","—","Множественное в общем смысле."],
+["___ number of applicants rose by 20%.","the","The number of … (число). A number of … = несколько."],
+["___ number of students were late.","a","A number of + мн.ч. = «несколько, ряд»."],
+["The results were published in ___ Journal of Physical Chemistry.","the","Названия журналов обычно с the."],
+["She plays ___ violin.","the","Музыкальные инструменты — the."],
+["He got ___ A in chemistry.","an","Буква A читается [eɪ] — гласный звук."]
+];
+
+const ERRORS = [
+["Прошлый год — какое время?",["I visited London last year.","I have visited London last year."],0,"Указание на прошедшее время (last year, in 2020, ago) → Past Simple, не Present Perfect."],
+["Выбери правильно",["The information is available online.","Informations are available online."],0,"information — неисчисляемое, всегда ед.ч."],
+["Выбери правильно",["He explained the rule to me.","He explained me the rule."],0,"explain something TO someone. Нельзя explain me."],
+["«Я согласен»",["I agree with this opinion.","I am agree with this opinion."],0,"agree — глагол, без am."],
+["«Зависит от»",["It depends on the context.","It depends of the context."],0,"depend ON."],
+["«В настоящее время» =",["Currently","Actually"],0,"actually = «на самом деле» (ложный друг)."],
+["Выбери правильно",["Research shows that…","The researches show that…"],0,"research — обычно неисчисляемое; studies show — если нужно мн.ч."],
+["«Я студент второго курса»",["I am a second-year student.","I study at the second course."],0,"«курс» = year: a second-year student."],
+["«Мы обсудили вопрос»",["We discussed the issue.","We discussed about the issue."],0,"discuss без about (но a discussion about)."],
+["«Сдавать экзамен»",["take an exam","make an exam"],0,"take/sit an exam; pass = сдать успешно."],
+["«Симпатичный» =",["attractive / nice","sympathetic"],0,"sympathetic = сочувствующий."],
+["«Магазин» =",["shop / store","magazine"],0,"magazine = журнал."],
+["«Проверить результаты»",["check the results","control the results"],0,"control = управлять, контролировать процесс; проверить = check/verify."],
+["«Перспективная технология»",["a promising technology","a perspective technology"],0,"perspective = точка зрения; перспективный = promising."],
+["«Несмотря на дождь»",["Despite the rain","Despite of the rain"],0,"despite без of; in spite of — с of."],
+["Условное предложение",["If I have time, I will call you.","If I will have time, I will call you."],0,"После if (условие) — Present, не will."],
+["«Учу английский с 2020 года»",["I have been studying English since 2020.","I study English since 2020."],0,"since/for + действие до сих пор → Present Perfect (Continuous)."],
+["«Выросло на 20%»",["increased by 20%","increased on 20%"],0,"Изменение на величину — by; до уровня — to."],
+["Концовка письма",["I look forward to hearing from you.","I look forward to hear from you."],0,"look forward to + -ing (to здесь предлог)."],
+["«Все люди»",["Everyone / All people","Every people"],0,"every + ед.ч.; people — мн.ч."],
+["«Сделать ошибку»",["make a mistake","do a mistake"],0,"make a mistake / do research / do homework."],
+["«Много данных»",["a lot of data / much data","many datas"],0,"data — без -s (формально мн.ч. от datum)."],
+["«Эффективный метод»",["an effective method","an effectual method"],0,"effective — даёт результат; efficient — без лишних затрат."],
+["«Сейчас я работаю над проектом»",["I am working on a project now.","I work on a project now."],0,"Действие в процессе сейчас → Present Continuous."]
+];
+
+const TENSES = [
+["I ___ English for three years.",["have been studying","study","am studying"],0,"Длится до сих пор + for → Present Perfect Continuous."],
+["The experiment ___ yesterday.",["failed","has failed","was failing"],0,"yesterday → Past Simple."],
+["Since 1990, emissions ___ significantly.",["have fallen","fell","are falling"],0,"since → Present Perfect."],
+["By 2030, the number ___ to 750 million.",["will have risen","rises","will rise by"],0,"By + будущий момент → Future Perfect."],
+["When I arrived, the lecture ___.",["had already started","already started","has already started"],0,"Раньше другого действия в прошлом → Past Perfect."],
+["The graph shows that sales ___ between 2010 and 2015.",["rose","have risen","rise"],0,"Закрытый период в прошлом → Past Simple."],
+["This is the first time I ___ a TOEFL test.",["have taken","take","took"],0,"This is the first time + Present Perfect."],
+["Look! The solution ___ colour.",["is changing","changes","has changed"],0,"Прямо сейчас → Present Continuous."],
+["Water ___ at 0 °C.",["freezes","is freezing","has frozen"],0,"Общая истина → Present Simple."],
+["While we ___ the data, the power went off.",["were analysing","analysed","had analysed"],0,"Длительный фон в прошлом → Past Continuous."],
+["If the temperature rose, the pressure ___.",["would increase","will increase","increases"],0,"Second conditional: if + Past → would."],
+["The samples ___ every hour.",["are tested","test","are testing"],0,"Образцы проверяют (их) → пассив."],
+["The results ___ by the end of next week.",["will be published","will publish","are publishing"],0,"Будущий пассив."],
+["He ___ in the lab when I called.",["was working","worked","has worked"],0,"Процесс в момент прошлого → Past Continuous."],
+["Over the past decade, the use of solar energy ___ steadily.",["has grown","grew","grows"],0,"over the past decade (до сих пор) → Present Perfect."],
+["The reaction mixture ___ to room temperature and then filtered.",["was cooled","cooled","has cooled"],0,"Описание процесса — пассив (Task 1 process)."]
+];
+
+const BUILD = [
+"Could you tell me where the chemistry lab is?",
+"I wonder whether the deadline has been extended.",
+"Do you know when the results will be published?",
+"The professor asked if we had finished the experiment.",
+"Not only is this method cheaper, but it is also safer.",
+"Have you decided which program to apply for?",
+"She wanted to know how long the course lasts.",
+"What I found most useful was the practical session.",
+"Would you mind sending me the slides again?",
+"It was the catalyst that increased the reaction rate.",
+"Rarely have I seen such clear results.",
+"I am not sure what time the seminar starts.",
+"Can you explain why the yield was so low?",
+"The data we collected last week were incomplete."
+];
+
+const DICT = [
+"The library will be closed on Monday for maintenance.",
+"Please submit your lab report by Friday afternoon.",
+"Students must wear safety glasses in the laboratory.",
+"The professor extended the deadline by one week.",
+"Registration for summer courses opens next month.",
+"Our group analyzed the data using a simple model.",
+"The reaction produces heat and a small amount of gas.",
+"You can borrow up to five books at a time.",
+"The results suggest that temperature affects the rate.",
+"Office hours are held every Wednesday after lunch.",
+"The shuttle bus leaves from the main entrance.",
+"Remember to label every sample before storing it.",
+"This course focuses on computational methods in chemistry.",
+"Applications without a language certificate will not be considered.",
+"The seminar has been moved to the second floor."
+];
+
+const WRITE = [
+{type:"discussion",prof:"Dr. Lee (Environmental Science)",q:"Several governments are considering a complete ban on single-use plastics. Some say a ban is the most effective way to cut pollution; others argue it harms consumers and small businesses. Which approach would you support, and why?",
+ a:["Anna","A full ban is the only thing that works. Voluntary measures have been tried for years and plastic waste keeps growing."],b:["Mark","I think taxes and better recycling are smarter. A ban hits small shops hardest, and alternatives are not always greener."]},
+{type:"discussion",prof:"Dr. Novak (Education)",q:"Should universities require every student to take at least one programming course, regardless of their major? Explain your view.",
+ a:["Priya","Yes. Almost every job now involves data, and basic coding teaches logical thinking."],b:["Tom","No. Students already have heavy workloads; it should stay an elective for those who are interested."]},
+{type:"discussion",prof:"Dr. Kim (Chemical Engineering)",q:"Automated labs and AI are developing fast. Do you think they will replace a significant part of human laboratory work in the next twenty years?",
+ a:["Claire","Definitely. Robots can run experiments 24/7 and AI can plan them, so routine lab work will disappear."],b:["Daniel","I doubt it. Real experiments go wrong in unexpected ways, and that needs human judgment."]},
+{type:"discussion",prof:"Dr. Rossi (Urban Planning)",q:"When a city has a limited budget, should it invest more in public transport or in expanding roads? Why?",
+ a:["Sofia","Public transport. More roads just create more traffic in the long run."],b:["Liam","Roads. Many people live where buses don't reach, and deliveries need roads too."]},
+{type:"discussion",prof:"Dr. Haddad (International Studies)",q:"Is it better for students to study abroad for one semester, or to complete an entire degree in another country?",
+ a:["Mei","One semester is enough to gain experience without the huge cost."],b:["Oscar","A full degree gives real fluency and much better job opportunities abroad."]},
+{type:"email",prof:"Summer school coordinator",q:"You attended an international summer school. Your certificate has your name spelled incorrectly, and you need it for an exchange application.",bullets:["Explain the problem","Request a corrected certificate","Ask how long it will take and whether a digital copy is possible"]},
+{type:"email",prof:"Professor Weber",q:"Your professor offered you a research internship, but the start date conflicts with your exam session.",bullets:["Thank the professor","Explain the conflict","Suggest an alternative start date or arrangement"]},
+{type:"email",prof:"Lab manager, Materials Science Group",q:"You want to join a research project on battery materials as a remote student assistant.",bullets:["Introduce yourself briefly","Ask about requirements for joining","Ask whether remote participation is possible"]}
+];
+
+const SPEAK = [
+"Do you prefer studying alone or in a group? Why?",
+"Describe a skill you learned at university that will be useful in your career.",
+"Some people say online classes are as effective as in-person ones. What do you think?",
+"What would you change about public transport in your city?",
+"Should companies pay for their employees' further education?",
+"Tell me about a project or experiment that did not go as planned. What did you learn?",
+"Is it important for scientists to explain their work to the public? Why?",
+"Which technology has changed your daily life the most?",
+"Do you think exams are a fair way to measure knowledge?",
+"Where would you like to do a master's degree, and why?",
+"Should universities make internships compulsory?",
+"What is the best way to learn new vocabulary, in your experience?"
+];
+
+const PLAN = [
+{w:[0,0],f:"Диагностика",wr:"Эссе по IA Unit 1 (с.7) + 1 Academic Discussion",sp:"4 ответа по 45 с (вопросы Part 1/3 из Файла 1)",rl:"Полный пробный тест ETS",t:"Тест 0"},
+{w:[1,2],f:"Фундамент: артикли, времена",wr:"IA Unit 1 — организация, введения, topic sentences; Файл 1 — general statement + thesis",sp:"Шаблон Part 1 (Файл 1) → ответы на 45 с",rl:"New Scientist / NatGeo, BBC Learning English"},
+{w:[3,4],f:"Абзац и аргумент",wr:"IA Unit 2 — contrasting ideas, good paragraph; Файл 1 — абзац BYOB → посты Discussion",sp:"Part 3: Give reasons / Develop an idea",rl:"Адаптивное чтение: лексика в контексте"},
+{w:[5,6],f:"Мнение и дискуссия",wr:"IA Unit 3 — supporting arguments, discussion essays → Academic Discussion",sp:"«See both sides» (Файл 1)",rl:"TED-Ed без субтитров, пересказ за 1 мин",t:"Тест 1 (нед. 6)"},
+{w:[7,8],f:"Связность и регистр",wr:"IA Unit 4 — despite, местоимения, пассив → Write an Email",sp:"Listen & Repeat: shadowing 15 мин/день",rl:"Кампусные диалоги, объявления"},
+{w:[9,10],f:"Решения, условные",wr:"IA Unit 5 — in order to, second conditional → письма-предложения",sp:"Interview: «что бы вы изменили…»",rl:"Тексты по химии и материалам"},
+{w:[11,12],f:"Точность и редактура",wr:"IA Unit 6 — relative clauses, checking & editing, noun phrases; Build a Sentence",sp:"Запись → транскрипт → исправление → перезапись",rl:"Полные секции на время",t:"Тест 2 (нед. 12)"},
+{w:[13,14],f:"Описание данных",wr:"IA Unit 7–8 — тренды и сравнения, 1 текст/нед",sp:"Устно описать график за 45 с",rl:"STEM-лекции"},
+{w:[15,16],f:"Экзаменационная скорость",wr:"Полный Writing-блок на время; IA Unit 9 — процессы",sp:"Полный Speaking-блок",rl:"Смешанные адаптивные наборы",t:"Тест 3 (нед. 16)"},
+{w:[17,18],f:"Слабые места",wr:"Переписать 5 худших текстов; сверка с IA с.126–131",sp:"Убрать паузы и слова-паразиты",rl:"Только слабая секция",t:"Тест 4 (нед. 18): репетиция Home Edition"},
+{w:[19,20],f:"Разгрузка и экзамен",wr:"2 коротких текста",sp:"Разминка 15 мин в день экзамена",rl:"Лёгкая практика",t:"Экзамен 13–20.02"}
+];
+
+const STATIONS = [
+{id:"lex",code:"LEX",name:"Лексика AWL",d:"Академические слова, интервальное повторение",min:"5 мин"},
+{id:"art",code:"ART",name:"Артикли",d:"a / an / the / — в академических фразах",min:"4 мин"},
+{id:"err",code:"RUS",name:"Ошибки русских",d:"Ложные друзья, предлоги, типичные кальки",min:"4 мин"},
+{id:"tns",code:"TNS",name:"Времена",d:"Perfect vs Past, пассив для процессов",min:"4 мин"},
+{id:"bld",code:"BAS",name:"Build a Sentence",d:"Порядок слов — задание нового TOEFL",min:"5 мин"},
+{id:"dct",code:"L&R",name:"Диктант",d:"Слушай фразу из кампуса и набирай — аналог Listen & Repeat",min:"5 мин"},
+{id:"wrt",code:"WRT",name:"Writing + AI",d:"Academic Discussion / Email на время, строгая AI-оценка",min:"10 мин"},
+{id:"spk",code:"SPK",name:"Speaking + AI",d:"15 с подготовки, 45 с ответа, разбор транскрипта",min:"3 мин"}
+];
+
+/* ============ STATE ============ */
+const blank = () => ({v:2,xp:0,dx:{},days:{},skills:{},box:{},sessions:{},unset:{},log:[],errs:[],seen:{wrt:0,spk:0}});
+let S = blank();
+const DEV=(()=>{try{let d=localStorage.getItem("toefl-dev");if(!d){d=Math.random().toString(36).slice(2,8);localStorage.setItem("toefl-dev",d);}return d;}catch(e){return "d"+Math.random().toString(36).slice(2,8);}})();
+let saveTimer = null;
+
+function dstr(d){const z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
+const TODAY = () => dstr(new Date());
+function parseD(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function daysBetween(a,b){return Math.round((parseD(b)-parseD(a))/864e5);}
+function weekNo(){const n=daysBetween(W1,TODAY());return n<0?0:Math.min(20,Math.floor(n/7)+1);}
+function weekDates(w){if(w===0)return "23–27.09";const s=parseD(W1);s.setDate(s.getDate()+(w-1)*7);const e=new Date(s);e.setDate(e.getDate()+6);const f=d=>String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0");return f(s)+"–"+f(e);}
+function phaseOf(w){return PLAN.find(p=>w>=p.w[0]&&w<=p.w[1])||PLAN[PLAN.length-1];}
+
+function lsGet(){try{const r=localStorage.getItem("toefl-ceh");return r?JSON.parse(r):null;}catch(e){return null;}}
+function lsSet(){try{localStorage.setItem("toefl-ceh",JSON.stringify(S));}catch(e){}}
+function merge(a,b){
+  a=norm(a);b=norm(b);const r=blank();
+  const ax=a.dx||{},bx=b.dx||{};
+  for(const k of Object.keys(a.days))if(!ax[k])ax[k]={legacy:a.days[k]};
+  for(const k of Object.keys(b.days))if(!bx[k])bx[k]={legacy:b.days[k]};
+  for(const k of new Set([...Object.keys(ax),...Object.keys(bx)])){const o={};for(const d of new Set([...Object.keys(ax[k]||{}),...Object.keys(bx[k]||{})]))o[d]=Math.max((ax[k]||{})[d]||0,(bx[k]||{})[d]||0);r.dx[k]=o;r.days[k]=Math.max(0,Object.values(o).reduce((x,y)=>x+y,0));}
+  for(const k of new Set([...Object.keys(a.skills),...Object.keys(b.skills)]))r.skills[k]=Math.max(a.skills[k]||0,b.skills[k]||0);
+  for(const k of new Set([...Object.keys(a.box),...Object.keys(b.box)]))r.box[k]=Math.max(a.box[k]??0,b.box[k]??0);
+  const del=Object.assign({},a.unset||{},b.unset||{});
+  for(const k of new Set([...Object.keys(a.sessions),...Object.keys(b.sessions)])){const ta=a.sessions[k]||0,tb=b.sessions[k]||0,t=Math.max(ta===true?1:ta,tb===true?1:tb);if(!(del[k]&&del[k]>t))r.sessions[k]=t;}
+  r.unset=del;
+  const key=x=>x.d+"|"+x.k+"|"+x.q+"|"+x.s;const seen=new Set();r.log=[...a.log,...b.log].filter(x=>!seen.has(key(x))&&seen.add(key(x))).sort((x,y)=>x.d<y.d?-1:1).slice(-60);
+  const se=new Set();r.errs=[...a.errs,...b.errs].filter(x=>!se.has(x.orig+x.fix)&&se.add(x.orig+x.fix)).slice(-80);
+  r.seen={wrt:Math.max(a.seen.wrt,b.seen.wrt),spk:Math.max(a.seen.spk,b.seen.spk)};
+  r.xp=Object.values(r.days).reduce((x,y)=>x+y,0);
+  return r;
+}
+function norm(o){const b=blank();const r=Object.assign(b,JSON.parse(JSON.stringify(o||{})),{seen:Object.assign(b.seen,(o&&o.seen)||{})});r.unset=r.unset||{};r.dx=r.dx||{};return r;}
+
+function cfg(k,v){try{if(v===undefined)return localStorage.getItem("toefl-"+k)||"";if(v===null)localStorage.removeItem("toefl-"+k);else localStorage.setItem("toefl-"+k,v);}catch(e){return "";}}
+const GH="https://api.github.com", GFILE="toefl-ceh-progress.json", AFILE="toefl-ceh-ai.json";
+function ghH(){return {"Authorization":"Bearer "+cfg("gh"),"Accept":"application/vnd.github+json"};}
+async function ghFind(){
+  const r=await fetch(GH+"/gists?per_page=100",{headers:ghH()});if(!r.ok)throw new Error("token");
+  const list=await r.json();const g=list.find(x=>x.files&&x.files[GFILE]);return g?g.id:"";
+}
+async function ghPull(){
+  const r=await fetch(GH+"/gists/"+cfg("gist"),{headers:ghH(),cache:"no-store"});if(!r.ok)throw new Error("pull "+r.status);
+  const g=await r.json();const f=g.files[GFILE];if(!f)return null;
+  let txt=f.content;if(f.truncated){txt=await (await fetch(f.raw_url,{cache:"no-store"})).text();}
+  const af=g.files[AFILE];if(af){try{const a=JSON.parse(af.content);if(a&&a.key&&(+a.ts||0)>(+cfg("aits")||0)){cfg("prov",a.prov);cfg("key",a.key);cfg("model",a.model);cfg("aits",String(a.ts));if($("apiProv"))loadAIui();}}catch(_){}}
+  return JSON.parse(txt);
+}
+async function ghPush(){
+  const body={files:{[GFILE]:{content:JSON.stringify(S)}}};
+  if(cfg("key"))body.files[AFILE]={content:JSON.stringify({prov:cfg("prov")||"openrouter",key:cfg("key"),model:cfg("model"),ts:+cfg("aits")||Date.now()})};
+  if(!cfg("gist")){const r=await fetch(GH+"/gists",{method:"POST",headers:ghH(),body:JSON.stringify(Object.assign({description:"Цех TOEFL — прогресс",public:false},body))});if(!r.ok)throw new Error("create "+r.status);cfg("gist",(await r.json()).id);const el=$("ghGist");if(el)el.value=cfg("gist");return;}
+  const r=await fetch(GH+"/gists/"+cfg("gist"),{method:"PATCH",headers:ghH(),body:JSON.stringify(body)});if(!r.ok)throw new Error("push "+r.status);
+}
+let syncing=false;
+async function sync(){
+  if(!cfg("gh")){setSave("прогресс хранится в этом браузере");return;}
+  if(syncing)return;syncing=true;setSave("синхронизирую…");
+  try{
+    if(!cfg("gist")){const id=await ghFind();if(id)cfg("gist",id);}
+    if(cfg("gist")){const remote=await ghPull();if(remote)S=merge(S,remote);}
+    lsSet();await ghPush();
+    setSave("синхронизировано · "+new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}));
+    if($("lesson").hidden)renderAll();
+  }catch(e){setSave(String(e.message)==="token"?"GitHub не принял токен — проверь его":"нет связи с GitHub — прогресс сохранён в браузере");}
+  syncing=false;
+}
+function save(){lsSet();clearTimeout(saveTimer);saveTimer=setTimeout(sync,1500);}
+function setSave(t){for(const id of ["saveState","syncState2"]){const el=document.getElementById(id);if(el)el.textContent=t;}}
+
+function addXP(n,skill){const t=TODAY();S.dx[t]=S.dx[t]||{};S.dx[t][DEV]=(S.dx[t][DEV]||0)+n;S.days[t]=Math.max(0,Object.values(S.dx[t]).reduce((x,y)=>x+y,0));S.xp=Object.values(S.days).reduce((x,y)=>x+y,0);if(skill)S.skills[skill]=(S.skills[skill]||0)+n;save();}
+function streak(){let d=new Date(),c=0;if(!S.days[dstr(d)])d.setDate(d.getDate()-1);while(S.days[dstr(d)]>0){c++;d.setDate(d.getDate()-1);}return c;}
+
+/* ============ RENDER: HOME ============ */
+function renderGauges(){
+  const t=S.days[TODAY()]||0, pct=Math.min(100,t/GOAL*100), w=weekNo(), left=Math.max(0,daysBetween(TODAY(),EXAM));
+  document.getElementById("gauges").innerHTML=`
+  <div class="g"><span class="tag">Серия</span><span class="v">${streak()} <small>дн.</small></span></div>
+  <div class="g"><span class="tag">Сегодня</span><span class="v">${t} <small>/ ${GOAL} XP</small></span><div class="meter ${t>=GOAL?"done":""}"><i style="width:${pct}%"></i></div></div>
+  <div class="g"><span class="tag">Всего</span><span class="v">${S.xp} <small>XP</small></span></div>
+  <div class="g"><span class="tag">Неделя плана</span><span class="v">${w} <small>/ 20</small></span></div>
+  <div class="g"><span class="tag">До экзамена</span><span class="v">${left} <small>дн.</small></span></div>`;
+}
+function renderToday(){
+  const now=new Date(), dow=now.getDay(), w=weekNo(), p=phaseOf(w);
+  document.getElementById("todayDate").textContent=now.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long"});
+  const key={1:"A",3:"B",5:"C"}[dow];
+  let items=[];
+  if(key==="A") items=[["Reading на время — 40 мин",null],["Лексика AWL — 20 мин","lex"],["Writing: "+p.wr,"wrt"],["Разбор ошибок — 20 мин",null]];
+  else if(key==="B") items=[["Listening без конспекта — 40 мин",null],["Диктант / shadowing — 20 мин","dct"],["Speaking: "+p.sp,"spk"],["AI-разбор ответов — 20 мин",null]];
+  else if(key==="C") items=[["Мини-тест по слабому навыку","tns"],["Журнал ошибок + переписать 1 текст","wrt"],["Повтор лексики","lex"],[p.t?"Контроль: "+p.t:"Раз в 3 недели — полный пробник вместо занятия",null]];
+  else items=[["Лексика AWL (5 мин)","lex"],["Один урок грамматики (4 мин)",["art","err","tns","bld"][now.getDate()%4]],["Speaking: один ответ на 45 с","spk"]];
+  const sk="w"+w+(key||"");
+  const sessionBtn=key?`<div class="row" style="margin-top:14px"><button class="chk" role="checkbox" aria-checked="${!!S.sessions[sk]}" data-sess="${sk}" aria-label="Занятие ${key} выполнено">${S.sessions[sk]?"✓":""}</button><span>Занятие <b>${key}</b> недели ${w} выполнено <span class="muted">(+50 XP)</span></span></div>`:"";
+  document.getElementById("todayTitle").textContent=key?`Смена: занятие ${key} · 2,5 ч`:"Смена: разминка 15 мин";
+  document.getElementById("todayBody").innerHTML=`
+    <div class="phase"><div class="tag">Неделя ${w} · ${weekDates(w)}</div><b>${p.f}</b>${p.t?` <span class="test">${p.t}</span>`:""}</div>
+    <ul class="today-list">${items.map(([t,s])=>`<li><span class="mono muted">▸</span><span>${s?`<a href="#" data-go="${s}" style="color:var(--ink);text-decoration-color:var(--accent);text-underline-offset:3px">${t}</a>`:t}</span></li>`).join("")}</ul>
+    ${sessionBtn}`;
+}
+function renderHeat(){
+  const el=document.getElementById("heat"), end=new Date(); const start=new Date(end); start.setDate(start.getDate()-83-((end.getDay()+6)%7));
+  let h="";for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){const k=dstr(d),x=S.days[k]||0,l=x===0?"":x>=GOAL*2?"l3":x>=GOAL?"l2":"l1";h+=`<span class="${l} ${k===TODAY()?"today":""}" title="${k}: ${x} XP"></span>`;}
+  el.innerHTML=h;
+}
+function renderStations(){
+  const t=TODAY(), rec=["lex",["art","err","tns","bld"][new Date().getDate()%4]];
+  const mastered=Object.values(S.box).filter(b=>b>=3).length;
+  document.getElementById("stations").innerHTML=STATIONS.map(s=>{
+    const xp=S.skills[s.id]||0, lvl=Math.floor(xp/100)+1, into=xp%100;
+    const extra=s.id==="lex"?` · выучено ${mastered}/${WORDS.length}`:"";
+    return `<button class="st ${rec.includes(s.id)?"focus":""}" data-go="${s.id}">
+      <span class="code"><b>${s.code}</b></span>
+      <span><h3>${s.name}</h3><p>${s.d} · ${s.min}</p></span>
+      <span class="lvlbox"><span class="lvl">ур. ${lvl} · ${xp} XP${extra}</span><div class="meter"><i style="width:${into}%"></i></div></span>
+      <span class="go">Начать →</span></button>`;}).join("");
+}
+function renderPlan(){
+  const cur=weekNo();let rows="";
+  for(let w=0;w<=20;w++){const p=phaseOf(w);const first=p.w[0]===w;
+    const abc=w===0?"":["A","B","C"].map(L=>{const k="w"+w+L;return `<button class="chk" role="checkbox" aria-checked="${!!S.sessions[k]}" data-sess="${k}" aria-label="Неделя ${w}, занятие ${L}">${S.sessions[k]?"✓":L}</button>`}).join("");
+    rows+=`<tr class="${w===cur?"cur":""}"><td class="w">${w}</td><td class="mono" style="white-space:nowrap">${weekDates(w)}</td>
+    <td>${first?`<b>${p.f}</b>`:`<span class="muted">${p.f}</span>`}${p.t&&w===p.w[1]?`<br><span class="test">${p.t}</span>`:""}</td>
+    <td>${first?p.wr:""}</td><td>${first?p.sp:""}</td><td><div class="abc">${abc}</div></td></tr>`;}
+  document.getElementById("planTable").innerHTML=`<thead><tr><th>Нед.</th><th>Даты</th><th>Фокус</th><th>Writing</th><th>Speaking</th><th>Занятия</th></tr></thead><tbody>${rows}</tbody>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function renderLog(){
+  const L=document.getElementById("logList"), E=document.getElementById("errList");
+  L.innerHTML=S.log.length?S.log.slice().reverse().map(r=>`<div class="card" style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><span class="tag">${r.d} · ${r.k==="wrt"?"Writing":"Speaking"}</span><b class="mono" style="font-size:20px;color:var(--accent)">${r.s??"—"}</b></div><div style="font-size:14px">${esc(r.q)}</div>${r.sum?`<div class="note">${esc(r.sum)}</div>`:""}</div>`).join(""):`<p class="muted">Пока пусто. Сдай первый текст на станции WRT — оценка появится здесь.</p>`;
+  E.innerHTML=S.errs.length?`<table class="err"><tr><th>Было</th><th>Стало</th><th>Правило</th></tr>${S.errs.slice().reverse().slice(0,40).map(e=>`<tr><td class="del">${esc(e.orig)}</td><td class="ins">${esc(e.fix)}</td><td>${esc(e.rule_ru)}</td></tr>`).join("")}</table>`:`<p class="muted">Ошибки из AI-проверок собираются сюда — перечитывай перед каждым занятием C.</p>`;
+}
+function renderAll(){renderGauges();renderToday();renderHeat();renderStations();renderPlan();renderLog();}
+
+/* ============ LESSON ENGINE ============ */
+const $=id=>document.getElementById(id);
+let L=null;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pick(a,n){return shuffle(a).slice(0,n);}
+
+function buildItems(id){
+  if(id==="lex"){
+    const scored=WORDS.map((w,i)=>({i,b:S.box[w[0]]??0,r:Math.random()})).sort((a,b)=>a.b-b.b||a.r-b.r).slice(0,8);
+    return scored.map(({i},k)=>{const w=WORDS[i];const rev=k%3===2;
+      const others=pick(WORDS.filter(x=>x!==w),3);
+      if(rev) return {kind:"mc",word:w[0],q:`Как по-английски «${w[1]}»?`,opts:shuffle([w[0],...others.map(o=>o[0])]),ans:w[0],ex:w[2],speak:w[0]};
+      return {kind:"mc",word:w[0],q:`<span class="tag">Что значит</span><br>${w[0]}`,opts:shuffle([w[1],...others.map(o=>o[1])]),ans:w[1],ex:w[2],speak:w[0]};});
+  }
+  if(id==="art") return pick(ARTICLES,8).map(a=>({kind:"mc",q:a[0].replace("___",'<span class="blank"></span>'),opts:["a","an","the","—"],ans:a[1],ex:a[2]}));
+  if(id==="err") return pick(ERRORS,8).map(e=>({kind:"mc",q:e[0],opts:shuffle(e[1]),ans:e[1][e[2]],ex:e[3]}));
+  if(id==="tns") return pick(TENSES,8).map(e=>({kind:"mc",q:e[0].replace("___",'<span class="blank"></span>'),opts:shuffle(e[1]),ans:e[1][e[2]],ex:e[3]}));
+  if(id==="bld") return pick(BUILD,6).map(s=>({kind:"tiles",q:"Собери предложение",ans:s,tiles:shuffle(s.split(" "))}));
+  if(id==="dct") return pick(DICT,6).map(s=>({kind:"type",q:"Прослушай и напиши",ans:s}));
+}
+
+function startLesson(id){
+  if(id==="wrt") return startWriting();
+  if(id==="spk") return startSpeaking();
+  const items=buildItems(id);
+  L={id,items,i:0,ok:0,total:items.length,retry:new Set(),first:true};
+  $("lesson").hidden=false;document.body.style.overflow="hidden";showItem();
+}
+function closeLesson(){try{speechSynthesis.cancel();}catch(e){}clearInterval(timerId);$("lesson").hidden=true;document.body.style.overflow="";L=null;renderAll();}
+function setProg(){const done=L.i, tot=L.items.length;$("lprog").style.width=(done/tot*100)+"%";$("lcount").textContent=L.total?`${Math.min(done+1,tot)}/${tot}`:"";}
+function feedback(ok,expl){
+  const fb=$("fb");fb.hidden=false;fb.className="fb "+(ok?"ok":"no");
+  $("fbv").textContent=ok?"Верно":"Неверно — вопрос повторится в конце урока";
+  $("fbe").innerHTML=expl||"";$("fbnext").focus();
+}
+function answered(ok,expl){
+  const it=L.items[L.i];
+  if(it.word){S.box[it.word]=ok?Math.min(5,(S.box[it.word]??0)+1):0;}
+  if(ok&&!it.retried)L.ok++;
+  if(!ok&&!it.retried){L.items.push(Object.assign({},it,{retried:true,tiles:it.tiles?shuffle(it.tiles):undefined,opts:it.opts?shuffle(it.opts):undefined}));}
+  feedback(ok,expl);
+}
+function next(){
+  $("fb").hidden=true;
+  if(!L)return;
+  if(L.mode){closeLesson();return;}
+  L.i++;
+  if(L.i>=L.items.length)return finish();
+  showItem();
+}
+function finish(){
+  const xp=10+L.ok;addXP(xp,L.id);
+  $("lprog").style.width="100%";
+  $("lin").innerHTML=`<div class="lin done" style="padding:40px 0"><span class="tag">Урок завершён</span><div class="big">+${xp} XP</div>
+  <p>Правильно с первой попытки: <b>${L.ok}/${L.total}</b></p><p class="muted">Сегодня: ${S.days[TODAY()]} / ${GOAL} XP · серия ${streak()} дн.</p>
+  <div class="row" style="justify-content:center"><button class="btn pri" id="again">Ещё урок</button><button class="btn" id="home">На главную</button></div></div>`;
+  const id=L.id;$("again").onclick=()=>startLesson(id);$("home").onclick=closeLesson;$("again").focus();
+}
+function say(text,rate){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=rate||0.95;const v=speechSynthesis.getVoices().find(v=>/^en(-|_)(US|GB)/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+
+function showItem(){
+  setProg();const it=L.items[L.i],box=$("lin");
+  if(it.kind==="mc"){
+    box.innerHTML=`<div class="q">${it.q}</div>${it.speak?`<div><button class="btn" id="spk">▶ Произношение</button></div>`:""}<div class="opts">${it.opts.map((o,k)=>`<button class="opt" data-o="${esc(o)}"><kbd>${k+1}</kbd><span>${esc(o)}</span></button>`).join("")}</div>`;
+    if(it.speak)$("spk").onclick=()=>say(it.speak);
+    box.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      const ok=b.dataset.o===it.ans;box.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(x.dataset.o===it.ans)x.classList.add("ok");});
+      if(!ok)b.classList.add("no");
+      answered(ok,(ok?"":`Ответ: <b>${esc(it.ans)}</b>. `)+esc(it.ex||""));});
+  }
+  if(it.kind==="tiles"){
+    const chosen=[];
+    box.innerHTML=`<div class="q">${it.q}</div><div class="ans" id="ansLine" aria-label="Твоё предложение"></div><div class="bank" id="bank">${it.tiles.map((t,k)=>`<button class="tile" data-k="${k}">${esc(t)}</button>`).join("")}</div><div><button class="btn pri" id="check" disabled>Проверить</button></div>`;
+    const draw=()=>{$("ansLine").innerHTML=chosen.map((k,p)=>`<button class="tile" data-p="${p}">${esc(it.tiles[k])}</button>`).join("");
+      $("bank").querySelectorAll(".tile").forEach(b=>b.classList.toggle("used",chosen.includes(+b.dataset.k)));
+      $("ansLine").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{chosen.splice(+b.dataset.p,1);draw();});
+      $("check").disabled=chosen.length!==it.tiles.length;};
+    $("bank").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(!chosen.includes(k)){chosen.push(k);draw();}});
+    $("check").onclick=()=>{const s=chosen.map(k=>it.tiles[k]).join(" ");const ok=s===it.ans;$("check").disabled=true;
+      box.querySelectorAll(".tile").forEach(b=>b.disabled=true);answered(ok,ok?esc(it.ans):`Правильно: <b>${esc(it.ans)}</b>`);};
+  }
+  if(it.kind==="type"){
+    box.innerHTML=`<div class="q">${it.q}</div><div class="row"><button class="btn pri" id="play">▶ Слушать</button><button class="btn" id="slow">▶ Медленно</button></div>
+    <input class="txt" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши, что услышал"><div><button class="btn pri" id="check">Проверить</button></div>
+    <p class="note">Если звука нет — в этом окне недоступен синтез речи; включи звук на устройстве или открой страницу в браузере.</p>`;
+    $("play").onclick=()=>say(it.ans);$("slow").onclick=()=>say(it.ans,0.7);setTimeout(()=>say(it.ans),250);
+    const go=()=>{const r=cmp(it.ans,$("typed").value);$("check").disabled=true;$("typed").disabled=true;
+      answered(r.acc>=0.85,`Точность ${Math.round(r.acc*100)}%. ${r.html}`);};
+    $("check").onclick=go;$("typed").onkeydown=e=>{if(e.key==="Enter"&&!$("check").disabled)go();};$("typed").focus();
+  }
+}
+function words(s){return s.toLowerCase().replace(/[^a-z0-9' ]+/g," ").split(/\s+/).filter(Boolean);}
+function cmp(ref,got){const a=words(ref),b=words(got);const m=a.map(()=>Array(b.length+1).fill(0));
+  const T=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)T[i][j]=a[i-1]===b[j-1]?T[i-1][j-1]+1:Math.max(T[i-1][j],T[i][j-1]);
+  const hit=new Set();let i=a.length,j=b.length;while(i&&j){if(a[i-1]===b[j-1]){hit.add(i-1);i--;j--;}else if(T[i-1][j]>=T[i][j-1])i--;else j--;}
+  const acc=T[a.length][b.length]/Math.max(a.length,b.length,1);
+  return {acc,html:"<br>"+a.map((w,k)=>hit.has(k)?esc(w):`<span class="ins">${esc(w)}</span>`).join(" ")};}
+
+/* ============ WRITING ============ */
+let timerId=null;
+function runTimer(sec,el,onEnd){clearInterval(timerId);let t=sec;const draw=()=>{el.textContent=String(Math.floor(t/60)).padStart(1,"0")+":"+String(t%60).padStart(2,"0");el.classList.toggle("low",t<=10);};draw();
+  timerId=setInterval(()=>{t--;draw();if(t<=0){clearInterval(timerId);onEnd&&onEnd();}},1000);}
+function taskText(p){
+  if(p.type==="email") return `Write an email to ${p.prof}. Situation: ${p.q} In your email: ${p.bullets.join("; ")}.`;
+  return `Academic Discussion. Professor ${p.prof}: "${p.q}" Student ${p.a[0]}: "${p.a[1]}" Student ${p.b[0]}: "${p.b[1]}" Write a response that contributes to the discussion (100+ words).`;
+}
+function startWriting(){
+  const p=WRITE[S.seen.wrt%WRITE.length];
+  L={id:"wrt",items:[{}],i:0,ok:0,total:0,mode:"wrt"};
+  $("lesson").hidden=false;document.body.style.overflow="hidden";$("lprog").style.width="0";$("lcount").textContent="";
+  const isE=p.type==="email", sec=isE?420:600;
+  $("lin").innerHTML=`<div class="row" style="justify-content:space-between"><span class="tag">${isE?"Write an Email · 7 мин":"Academic Discussion · 10 мин"}</span><span class="timer" id="tm"></span></div>
+  <div class="card"><b>${esc(p.prof)}</b><p style="margin:6px 0 0">${esc(p.q)}</p>
+  ${isE?`<ul style="margin:8px 0 0">${p.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`:`<div class="post"><b>${esc(p.a[0])}</b><div>${esc(p.a[1])}</div></div><div class="post"><b>${esc(p.b[0])}</b><div>${esc(p.b[1])}</div></div>`}</div>
+  <textarea class="txt" id="essay" spellcheck="false" placeholder="${isE?"Dear …,":"I see where both Anna and Mark are coming from, but…"}"></textarea>
+  <div class="row" style="justify-content:space-between"><span class="mono muted" id="wc">0 слов · цель ${isE?"80–120":"100–130"}</span>
+  <div class="row"><button class="btn" id="skip">Другое задание</button><button class="btn pri" id="send">Сдать на проверку</button></div></div>
+  <div id="res"></div>`;
+  const ta=$("essay");ta.oninput=()=>{$("wc").textContent=words(ta.value).length+" слов · цель "+(isE?"80–120":"100–130");};
+  runTimer(sec,$("tm"),()=>{$("wc").textContent+=" · время вышло";});
+  $("skip").onclick=()=>{S.seen.wrt++;save();startWriting();};
+  $("send").onclick=async()=>{
+    const txt=ta.value.trim(),n=words(txt).length;if(n<40){$("res").innerHTML=`<p class="note">Нужно хотя бы 40 слов, чтобы оценка имела смысл.</p>`;return;}
+    clearInterval(timerId);$("send").disabled=true;$("skip").disabled=true;ta.readOnly=true;
+    S.seen.wrt++;addXP(30,"wrt");
+    const prompt=`You are a strict certified TOEFL iBT rater (January 2026 format, score scale 1–6 in 0.5 steps; 4.0≈B2, 5.0≈C1). Rate this ${isE?"Write an Email":"Writing for an Academic Discussion"} response.
+Rubric focus: task fulfilment and relevance, elaboration with reasons/examples, organisation and cohesion, range and precision of vocabulary, grammatical range and accuracy, register (${isE?"polite formal email, all three points covered":"academic but conversational, engages with classmates' ideas and adds a new point"}). Be strict; never inflate. Flag errors typical of Russian speakers (articles, tenses, prepositions, false friends, word order).
+TASK: ${taskText(p)}
+RESPONSE (${n} words): """${txt}"""
+Return ONLY JSON: {"score": number, "cefr": string, "summary_ru": string (2 sentences, Russian), "strengths_ru": [string], "errors": [{"orig": string, "fix": string, "rule_ru": string}] (all real errors, max 12), "rewrite": string (the same ideas rewritten at score 5.0, similar length), "drills_ru": [3 short concrete drills in Russian]}`;
+    gradeInto($("res"),prompt,{k:"wrt",q:(isE?"Email: ":"Discussion: ")+p.q.slice(0,90)});
+  };
+  ta.focus();
+}
+
+/* ============ SPEAKING ============ */
+function startSpeaking(){
+  const q=SPEAK[S.seen.spk%SPEAK.length];
+  L={id:"spk",items:[{}],i:0,ok:0,total:0,mode:"spk"};
+  $("lesson").hidden=false;document.body.style.overflow="hidden";$("lprog").style.width="0";$("lcount").textContent="";
+  $("lin").innerHTML=`<span class="tag">Take an Interview · 15 с подготовки · 45 с ответа</span>
+  <div class="q">${esc(q)}</div>
+  <div class="card"><b>Каркас (Файл 1):</b> прямой ответ → причина → пример → короткий вывод. Первая фраза отвечает на вопрос сразу.</div>
+  <div class="row" style="justify-content:space-between"><div><div class="tag" id="phase">Готов?</div><div class="timer" id="tm">0:15</div></div>
+  <div class="row"><button class="btn" id="skip">Другой вопрос</button><button class="btn pri" id="go">Старт</button></div></div>
+  <div class="meter"><i id="bar" style="width:0"></i></div>
+  <div id="after" hidden>
+    <p class="note">Запиши ответ на диктофон телефона, затем вставь сюда транскрипт (голосовой ввод клавиатуры тоже подойдёт). Слова-паразиты и паузы оставь как есть — это часть оценки.</p>
+    <textarea class="txt" id="tr" style="min-height:140px" placeholder="Well, I'd say I prefer…"></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn pri" id="chk">Проверить AI</button><button class="btn" id="done">Засчитать без проверки</button></div>
+    <div id="res"></div>
+  </div>`;
+  $("skip").onclick=()=>{S.seen.spk++;save();startSpeaking();};
+  $("go").onclick=()=>{$("go").disabled=true;$("skip").disabled=true;say(q);$("phase").textContent="Подготовка";
+    let t=15;const bar=$("bar");bar.style.width="0";
+    runTimer(15,$("tm"),()=>{$("phase").textContent="Говори!";let s=0;
+      runTimer(45,$("tm"),()=>{$("phase").textContent="Стоп";$("after").hidden=false;$("tr").focus();});
+      const iv=setInterval(()=>{s++;bar.style.width=(s/45*100)+"%";if(s>=45)clearInterval(iv);},1000);});};
+  let credited=false;const credit=()=>{if(!credited){credited=true;S.seen.spk++;addXP(20,"spk");}};
+  $("done").onclick=()=>{credit();S.log.push({d:TODAY(),k:"spk",q,s:null});S.log=S.log.slice(-60);save();closeLesson();};
+  $("chk").onclick=()=>{const tr=$("tr").value.trim();if(words(tr).length<15){$("res").innerHTML=`<p class="note">Вставь транскрипт — хотя бы 15 слов.</p>`;return;}
+    credit();$("chk").disabled=true;$("done").disabled=true;
+    const prompt=`You are a strict TOEFL iBT speaking rater (2026 "Take an Interview" task, 45-second answer, score 1–6 in 0.5 steps). You only see an automatic transcript, so do not judge pronunciation.
+QUESTION: "${q}"
+TRANSCRIPT: """${tr}"""
+Judge: does the first sentence answer directly; structure answer → reason → example → wrap-up; development and relevance; vocabulary range; grammar accuracy; fluency signs (fillers, restarts). Flag Russian-L1 errors.
+Return ONLY JSON: {"score": number, "cefr": string, "summary_ru": string (2 sentences, Russian), "strengths_ru": [string], "errors": [{"orig": string, "fix": string, "rule_ru": string}], "rewrite": string (a natural ~110-word model answer using the speaker's ideas, speakable in 45 s), "drills_ru": [3 short drills in Russian]}`;
+    gradeInto($("res"),prompt,{k:"spk",q});};
+}
+
+/* ============ AI GRADING ============ */
+const PROV={
+  openrouter:{model:"openrouter/free",ph:"sk-or-v1-…",help:'Ключ: <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> (вход через Google, GitHub или почту, карта не нужна). Модель <b>openrouter/free</b> сама выберет доступную бесплатную модель. Можно указать конкретную, например qwen/qwen3.8-27b:free. У бесплатного тарифа есть дневной лимит запросов.'},
+  gemini:{model:"gemini-2.5-flash",ph:"AIza…",help:'Ключ: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Google не обслуживает запросы из России, поэтому проверка работает только при включённом VPN.'},
+  anthropic:{model:"claude-sonnet-5",ph:"sk-ant-…",help:'Ключ: console.anthropic.com. Каждая проверка списывается с API-баланса.'}
+};
+function extractJSON(t){const a=t.indexOf("{"),b=t.lastIndexOf("}");if(a<0||b<a)throw {code:"модель ответила не в JSON — попробуй ещё раз"};return JSON.parse(t.slice(a,b+1));}
+async function aiText(prompt,maxTok){
+  const prov=cfg("prov")||"openrouter", key=cfg("key"), model=cfg("model")||PROV[prov].model;
+  let r,j;
+  if(prov==="openrouter"){
+    r=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key,"X-Title":"TOEFL Ceh"},
+      body:JSON.stringify({model,messages:[{role:"user",content:prompt}],max_tokens:maxTok,temperature:0.2})});
+    j=await r.json().catch(()=>({}));if(!r.ok||j.error)throw {code:"OpenRouter "+r.status+": "+((j.error&&j.error.message)||"ошибка")};
+    return j.choices[0].message.content||"";
+  }
+  if(prov==="gemini"){
+    r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:maxTok}})});
+    j=await r.json().catch(()=>({}));if(!r.ok)throw {code:"Gemini "+r.status+": "+((j.error&&j.error.message)||"ошибка")};
+    return ((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+  }
+  r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model,max_tokens:maxTok,messages:[{role:"user",content:prompt}]})});
+  j=await r.json().catch(()=>({}));if(!r.ok)throw {code:"Anthropic "+r.status+": "+((j.error&&j.error.message)||"ошибка")};
+  return (j.content||[]).map(c=>c.text||"").join("");
+}
+async function aiJSON(prompt){return extractJSON(await aiText(prompt,3000));}
+async function gradeInto(el,prompt,meta){
+  if(!cfg("key")){el.innerHTML=fallback(prompt);S.log.push({d:TODAY(),k:meta.k,q:meta.q,s:null});save();bindCopy(prompt);return;}
+  el.innerHTML=`<p class="tag" style="margin-top:14px">Проверяю… 10–40 секунд</p>`;
+  try{
+    const r=await aiJSON(prompt);
+    const errs=Array.isArray(r.errors)?r.errors.filter(e=>e&&e.orig):[];
+    S.errs=S.errs.concat(errs.map(e=>({orig:String(e.orig).slice(0,160),fix:String(e.fix||"").slice(0,160),rule_ru:String(e.rule_ru||"").slice(0,200)}))).slice(-80);
+    S.log.push({d:TODAY(),k:meta.k,q:meta.q,s:r.score,sum:String(r.summary_ru||"").slice(0,300)});S.log=S.log.slice(-60);save();
+    el.innerHTML=`<div class="result card" style="margin-top:14px;display:grid;gap:14px">
+      <div class="row" style="gap:18px"><div class="score">${esc(r.score)}</div><div><div class="tag">балл TOEFL 1–6 · ${esc(r.cefr||"")}</div><div>${esc(r.summary_ru)}</div></div></div>
+      ${(r.strengths_ru||[]).length?`<div><h3>Сильные стороны</h3><ul style="margin:0">${r.strengths_ru.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+      ${errs.length?`<div><h3>Ошибки</h3><div class="scroll"><table class="err"><tr><th>Было</th><th>Стало</th><th>Правило</th></tr>${errs.map(e=>`<tr><td class="del">${esc(e.orig)}</td><td class="ins">${esc(e.fix)}</td><td>${esc(e.rule_ru)}</td></tr>`).join("")}</table></div></div>`:""}
+      ${r.rewrite?`<div><h3>Версия на 5.0</h3><div style="white-space:pre-wrap">${esc(r.rewrite)}</div></div>`:""}
+      ${(r.drills_ru||[]).length?`<div><h3>Задания на неделю</h3><ul style="margin:0">${r.drills_ru.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>`:""}
+      <div class="row"><button class="btn pri" id="fin">Готово · +XP начислены</button></div></div>`;
+    $("fin").onclick=closeLesson;
+  }catch(e){
+    el.innerHTML=`<p class="note">AI-проверка не сработала (${esc(e&&e.code||"ошибка")}). XP начислены.</p>`+fallback(prompt);bindCopy(prompt);
+    S.log.push({d:TODAY(),k:meta.k,q:meta.q,s:null});save();
+  }
+}
+function fallback(p){return `<div class="card" style="margin-top:14px"><p style="margin-top:0">Ключ для AI не задан (вкладка «Журнал» → «AI-проверка»). Скопируй готовый промт и вставь в чат с Claude: получишь ту же разбивку.</p><div class="row"><button class="btn pri" id="cp">Скопировать промт</button><button class="btn" id="fin2">Закрыть</button></div><textarea class="txt" id="cpt" style="min-height:120px;margin-top:10px" readonly>${esc(p)}</textarea></div>`;}
+function bindCopy(p){const b=$("cp");if(!b)return;b.onclick=()=>{navigator.clipboard.writeText(p).then(()=>b.textContent="Скопировано",()=>{$("cpt").select();b.textContent="Выделено — нажми Ctrl+C";});};$("fin2").onclick=closeLesson;}
+
+/* ============ EVENTS ============ */
+document.addEventListener("click",e=>{
+  const go=e.target.closest("[data-go]");if(go){e.preventDefault();startLesson(go.dataset.go);return;}
+  const ss=e.target.closest("[data-sess]");if(ss){const k=ss.dataset.sess;if(S.sessions[k]){delete S.sessions[k];S.unset[k]=Date.now();addXP(-50,null);}else{S.sessions[k]=Date.now();delete S.unset[k];addXP(50,null);}renderAll();return;}
+  const tb=e.target.closest("[data-tab]");if(tb){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",b===tb));["home","plan","log"].forEach(v=>$("view-"+v).hidden=v!==tb.dataset.tab);try{localStorage.setItem("toefl-tab",tb.dataset.tab);}catch(_){}}
+});
+$("lx").onclick=closeLesson;$("fbnext").onclick=next;
+document.addEventListener("keydown",e=>{
+  if($("lesson").hidden)return;
+  if(e.key==="Escape"){closeLesson();return;}
+  if(!$("fb").hidden&&e.key==="Enter"){e.preventDefault();next();return;}
+  if(/^[1-4]$/.test(e.key)&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"){const o=$("lin").querySelectorAll(".opt")[+e.key-1];if(o&&!o.disabled)o.click();}
+});
+
+function loadAIui(){const p=cfg("prov")||"openrouter";$("apiProv").value=p;$("apiKey").value=cfg("key");$("apiModel").value=cfg("model")||PROV[p].model;$("apiKey").placeholder=PROV[p].ph;$("apiHelp").innerHTML=PROV[p].help;}
+function saveAI(){cfg("prov",$("apiProv").value);cfg("key",$("apiKey").value.trim()||null);cfg("model",$("apiModel").value.trim()||PROV[$("apiProv").value].model);cfg("aits",String(Date.now()));save();}
+/* ============ BACKUP ============ */
+$("bkMake").onclick=()=>{const code=btoa(unescape(encodeURIComponent(JSON.stringify(S))));const o=$("bkOut");o.value=code;o.hidden=false;$("bkCopy").hidden=false;o.select();};
+$("bkCopy").onclick=()=>{navigator.clipboard.writeText($("bkOut").value).then(()=>$("bkCopy").textContent="Скопировано",()=>{$("bkOut").select();$("bkCopy").textContent="Выделено — Ctrl+C";});};
+$("bkLoad").onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($("bkIn").value.trim()))));S=merge(S,o);save();renderAll();$("bkIn").value="";$("bkMsg").textContent="Готово: прогресс объединён.";}catch(e){$("bkMsg").textContent="Код не распознан — скопируй его целиком.";}};
+
+/* ============ BOOT ============ */
+(function boot(){
+  const ls=lsGet();if(ls)S=merge(blank(),ls);
+  try{const t=localStorage.getItem("toefl-tab");if(t){const b=document.querySelector(`[data-tab="${t}"]`);b&&b.click();}}catch(_){}
+  renderAll();
+  setSave(ls?"прогресс из этого браузера":"");
+  $("ghTok").value=cfg("gh");$("ghGist").value=cfg("gist");loadAIui();
+  $("ghSave").onclick=()=>{cfg("gh",$("ghTok").value.trim());const g=$("ghGist").value.trim();g?cfg("gist",g):cfg("gist",null);$("ghMsg").textContent="";sync();};
+  $("ghOff").onclick=()=>{cfg("gh",null);$("ghTok").value="";setSave("синхронизация отключена — прогресс в этом браузере");};
+  $("apiProv").onchange=()=>{const p=$("apiProv").value;$("apiModel").value=PROV[p].model;$("apiKey").placeholder=PROV[p].ph;$("apiHelp").innerHTML=PROV[p].help;};
+  $("apiSave").onclick=()=>{saveAI();$("apiMsg").textContent="Сохранено";};
+  $("apiTest").onclick=async()=>{saveAI();$("apiMsg").textContent="Проверяю…";try{const t=await aiText('Reply with exactly: {"ok":true}',50);$("apiMsg").textContent=/ok/.test(t)?"Ключ работает":"Ответ получен: "+t.slice(0,60);}catch(e){$("apiMsg").textContent=e.code||String(e);}};
+  sync();
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sync();});
+})();
+</script>
+</body>
+</html>
